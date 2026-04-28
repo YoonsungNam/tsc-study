@@ -11,7 +11,7 @@
 - [ ] `npm run lint` passes
 - [ ] `npm run check` passes
 - [ ] `npm run build` passes
-- [ ] Manual test:
+- [ ] Manual test (steps to reproduce):
 
 ## Screenshots (UI changes only)
 
