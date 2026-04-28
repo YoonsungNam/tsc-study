@@ -26,13 +26,13 @@ npm run dev
 
 ## 스크립트
 
-| 명령 | 동작 |
-|---|---|
-| `npm run dev` | 개발 서버 (HMR, 포트 5173) |
-| `npm run build` | 프로덕션 빌드 |
-| `npm run preview` | 빌드 결과 로컬 미리보기 |
-| `npm run check` | 타입 체크 (svelte-check) |
-| `npm run format` | Prettier 포맷팅 |
+| 명령              | 동작                       |
+| ----------------- | -------------------------- |
+| `npm run dev`     | 개발 서버 (HMR, 포트 5173) |
+| `npm run build`   | 프로덕션 빌드              |
+| `npm run preview` | 빌드 결과 로컬 미리보기    |
+| `npm run check`   | 타입 체크 (svelte-check)   |
+| `npm run format`  | Prettier 포맷팅            |
 
 ## 문서
 
