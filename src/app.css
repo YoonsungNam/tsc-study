@@ -26,8 +26,8 @@ body {
 	background: var(--bg);
 	color: var(--text);
 	font-family:
-		-apple-system, BlinkMacSystemFont, 'Pretendard', 'Apple SD Gothic Neo',
-		'Noto Sans KR', sans-serif;
+		-apple-system, BlinkMacSystemFont, 'Pretendard', 'Apple SD Gothic Neo', 'Noto Sans KR',
+		sans-serif;
 	-webkit-font-smoothing: antialiased;
 	overscroll-behavior-y: contain;
 	min-height: 100dvh;

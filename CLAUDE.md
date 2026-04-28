@@ -11,17 +11,17 @@
 
 ## 기술 스택
 
-| 영역 | 선택 | 버전 |
-|---|---|---|
-| 프론트엔드 | SvelteKit + Svelte 5 (runes 모드) | 2.58 / 5.55 |
-| 빌드 | Vite | 8 |
-| 언어 | TypeScript (strict) | 6 |
-| DB + 인증 | Supabase (Postgres + Auth + RLS) | @supabase/ssr 0.10 |
-| 음원 저장 | Cloudflare R2 (S3 호환) | — |
-| 전사 (기본) | transformers.js (브라우저 Whisper) | — |
-| 전사 (폴백) | Groq Whisper API | — |
-| 병음 | pinyin-pro | — |
-| 호스팅 | Vercel | adapter-vercel 6 |
+| 영역        | 선택                               | 버전               |
+| ----------- | ---------------------------------- | ------------------ |
+| 프론트엔드  | SvelteKit + Svelte 5 (runes 모드)  | 2.58 / 5.55        |
+| 빌드        | Vite                               | 8                  |
+| 언어        | TypeScript (strict)                | 6                  |
+| DB + 인증   | Supabase (Postgres + Auth + RLS)   | @supabase/ssr 0.10 |
+| 음원 저장   | Cloudflare R2 (S3 호환)            | —                  |
+| 전사 (기본) | transformers.js (브라우저 Whisper) | —                  |
+| 전사 (폴백) | Groq Whisper API                   | —                  |
+| 병음        | pinyin-pro                         | —                  |
+| 호스팅      | Vercel                             | adapter-vercel 6   |
 
 ## 자주 쓰는 명령
 
@@ -71,9 +71,10 @@ static/                     # PWA manifest, favicon
 - `SUPABASE_SERVICE_ROLE_KEY`, `R2_*`, `GROQ_API_KEY` — **서버 전용, 클라 노출 절대 금지**
 
 SvelteKit import 방식:
+
 ```ts
-import { PUBLIC_SUPABASE_URL } from '$env/static/public';   // 클라 OK
-import { GROQ_API_KEY } from '$env/static/private';          // 서버 전용
+import { PUBLIC_SUPABASE_URL } from '$env/static/public'; // 클라 OK
+import { GROQ_API_KEY } from '$env/static/private'; // 서버 전용
 ```
 
 ## DB 마이그레이션
@@ -83,9 +84,38 @@ import { GROQ_API_KEY } from '$env/static/private';          // 서버 전용
 - 새 테이블에는 항상 RLS 정책을 함께 작성
 - 멤버십 INSERT 등 보안 작업은 `security definer` 함수로 (예: `redeem_invite`)
 
-## Git 커밋 Identity
+## Git Workflow
 
-이 프로젝트의 모든 커밋은 **`YoonsungNam <sammynam29@gmail.com>`**:
+> **모든 git artifact는 영어**: 브랜치명, 커밋 메시지, PR 제목/본문/코멘트.
+> 사용자와의 대화는 한국어, 코드 주석은 한국어 OK. 단 git 출력물만은 영어 통일.
+
+### Branching — GitHub Flow
+
+`main`은 항상 배포 가능. 작업은 짧은 피처 브랜치에서.
+
+브랜치 명명 (Conventional, kebab-case, ≤30자, 단일 의도):
+
+| Prefix      | 용도               | 예시                        |
+| ----------- | ------------------ | --------------------------- |
+| `feat/`     | 새 기능            | `feat/magic-link-auth`      |
+| `fix/`      | 버그 수정          | `fix/invite-expiry-check`   |
+| `chore/`    | 도구·의존성·빌드   | `chore/upgrade-vite`        |
+| `refactor/` | 리팩터 (동작 동일) | `refactor/extract-supabase` |
+| `docs/`     | 문서만             | `docs/update-readme`        |
+
+### Commit messages — Conventional Commits
+
+```
+<type>(<scope>): <subject>
+
+<body — why this change, in English>
+
+Co-Authored-By: Claude Opus 4.7 (1M context) <noreply@anthropic.com>
+```
+
+Types: `feat`, `fix`, `docs`, `chore`, `refactor`, `style`, `test`.
+
+### Identity (per-command override)
 
 ```bash
 git -c user.name="YoonsungNam" -c user.email="sammynam29@gmail.com" commit -m "..."
@@ -93,7 +123,20 @@ git -c user.name="YoonsungNam" -c user.email="sammynam29@gmail.com" commit -m ".
 
 글로벌 `git config`(`ysnam@dcslab.snu.ac.kr`)는 다른 프로젝트용 — 건드리지 말 것.
 
-커밋 메시지 끝에는 `Co-Authored-By: Claude Opus 4.7 (1M context) <noreply@anthropic.com>`.
+### Pull requests
+
+워크플로우:
+
+1. `main`에서 피처 브랜치 분기
+2. 작업 + 커밋
+3. Push + `gh pr create` (`.github/pull_request_template.md` 자동 사용)
+4. CI 통과 (lint + typecheck + build)
+5. 사용자(YoonsungNam) 리뷰 + 승인
+6. **Squash merge** — PR 1개 = main commit 1개
+
+### Branch protection on `main`
+
+직접 push 금지, force push 금지, PR + CI 통과 필수, merge 전략은 squash만 허용.
 
 ## 작업 흐름 메모
 
@@ -105,9 +148,9 @@ git -c user.name="YoonsungNam" -c user.email="sammynam29@gmail.com" commit -m ".
 
 ## 문서 분담
 
-| 문서 | 용도 |
-|---|---|
-| **CLAUDE.md** (이 파일) | 작업 시 즉시 필요한 가이드 |
-| **docs/decisions.md** | 결정 이력의 아카이브 (왜) |
-| **MEMORY.md** (메모리) | 영속 메모 (git identity, 사용자 선호) |
-| **README.md** | 외부 사용자 시작 가이드 |
+| 문서                    | 용도                                  |
+| ----------------------- | ------------------------------------- |
+| **CLAUDE.md** (이 파일) | 작업 시 즉시 필요한 가이드            |
+| **docs/decisions.md**   | 결정 이력의 아카이브 (왜)             |
+| **MEMORY.md** (메모리)  | 영속 메모 (git identity, 사용자 선호) |
+| **README.md**           | 외부 사용자 시작 가이드               |
