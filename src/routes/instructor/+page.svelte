@@ -6,12 +6,12 @@
 
 <main>
 	<header>
-		<h1>학생 홈</h1>
+		<h1>강사 대시보드</h1>
 		<p class="email">{data.email}</p>
 	</header>
 
 	<div class="card">
-		<p>강사가 공유한 클래스 라이브러리가 여기에 표시됩니다 (Phase 3).</p>
+		<p>클래스 목록·생성 UI가 여기에 들어갑니다 (Phase 1 다음 PR).</p>
 	</div>
 
 	<form method="POST" action="/logout">

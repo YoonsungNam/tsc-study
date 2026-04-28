@@ -1,11 +1,22 @@
-// SvelteKit 앰비언트 타입 선언.
-// Phase 1에서 Locals(인증 사용자), PageData 등을 채울 예정.
+// SvelteKit ambient type declarations.
+// See https://kit.svelte.dev/docs/types#app
+
+import type { Session, SupabaseClient, User } from '@supabase/supabase-js';
 
 declare global {
 	namespace App {
 		// interface Error {}
-		// interface Locals {}
-		// interface PageData {}
+
+		interface Locals {
+			supabase: SupabaseClient;
+			safeGetSession: () => Promise<{ session: Session | null; user: User | null }>;
+		}
+
+		interface PageData {
+			session: Session | null;
+			user: User | null;
+		}
+
 		// interface PageState {}
 		// interface Platform {}
 	}
