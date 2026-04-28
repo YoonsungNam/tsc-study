@@ -134,9 +134,40 @@ git -c user.name="YoonsungNam" -c user.email="sammynam29@gmail.com" commit -m ".
 5. 사용자(YoonsungNam) 리뷰 + 승인
 6. **Squash merge** — PR 1개 = main commit 1개
 
+CI 실패 시 복구: 로컬에서 수정 → 같은 브랜치에 commit·push → CI 자동 재실행.
+
+### Reviewing pull requests
+
+PR 리뷰는 채팅에만 남기지 말고 **항상 PR 자체에 코멘트로 게시**. 절차:
+
+1. **기존 코멘트·리뷰 먼저 확인** — 다른 리뷰어 의견·작성자 응답을 읽고, 중복 회피 또는 상충점 명시:
+   ```bash
+   gh pr view <num> --comments
+   gh api repos/<owner>/<repo>/pulls/<num>/reviews
+   gh api repos/<owner>/<repo>/pulls/<num>/comments   # inline review comments
+   ```
+2. **메타정보 + diff** — `gh pr view <num>` (본문·상태·CI), `gh pr diff <num>` (코드 변경)
+3. **리뷰 작성** — Overview · Strengths · Issues (Must-fix / Should-fix / Nice-to-have / Nit) · Security · Test coverage · Verdict
+4. **PR에 게시**:
+   ```bash
+   gh pr review <num> --comment --body "$(cat <<'EOF'
+   ## Review
+   ...
+   EOF
+   )"
+   ```
+   본인 PR은 `--comment`만 가능 (GitHub이 self-approval 차단). 타인 PR은 `--approve` / `--request-changes` 가능.
+
 ### Branch protection on `main`
 
 직접 push 금지, force push 금지, PR + CI 통과 필수, merge 전략은 squash만 허용.
+
+> **주의**: workflow의 `jobs.<id>.name` 값이 GitHub status context 이름이 됨.
+> workflow를 변경할 때 branch protection의 `required_status_checks.contexts`도 동기화:
+>
+> ```bash
+> gh api -X PUT repos/<owner>/<repo>/branches/main/protection --input -
+> ```
 
 ## 작업 흐름 메모
 

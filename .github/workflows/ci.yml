@@ -6,6 +6,10 @@ on:
   push:
     branches: [main]
 
+# Least-privilege GITHUB_TOKEN: CI only needs to read code.
+permissions:
+  contents: read
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -14,6 +18,15 @@ jobs:
   check:
     name: Lint, typecheck & build
     runs-on: ubuntu-latest
+    timeout-minutes: 10
+    # Placeholders at job scope so SvelteKit's $env/static/public imports
+    # resolve in BOTH `svelte-kit sync` (typecheck) and `vite build`. Without
+    # this, future code that imports from $env/static/public would break the
+    # typecheck step even though the build step has placeholders.
+    # Real values are injected at deploy time (Vercel).
+    env:
+      PUBLIC_SUPABASE_URL: https://placeholder.supabase.co
+      PUBLIC_SUPABASE_ANON_KEY: placeholder
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -34,9 +47,4 @@ jobs:
         run: npm run check
 
       - name: Production build
-        env:
-          # Build-time env placeholders so $env/static/public imports resolve.
-          # Real values are injected at deploy time (Vercel).
-          PUBLIC_SUPABASE_URL: https://placeholder.supabase.co
-          PUBLIC_SUPABASE_ANON_KEY: placeholder
         run: npm run build
