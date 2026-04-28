@@ -32,6 +32,7 @@ export const handle: Handle = async ({ event, resolve }) => {
 	return resolve(event, {
 		// Supabase SSR sets non-standard headers SvelteKit doesn't pass through
 		// by default. Allow it explicitly.
-		filterSerializedResponseHeaders: (name) => name === 'content-range' || name === 'x-supabase-api-version'
+		filterSerializedResponseHeaders: (name) =>
+			name === 'content-range' || name === 'x-supabase-api-version'
 	});
 };
