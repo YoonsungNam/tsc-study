@@ -1,0 +1,20 @@
+{
+	"name": "TSC Study",
+	"short_name": "TSC Study",
+	"description": "중국어 학습용 PWA — 가사 싱크 재생",
+	"start_url": "/",
+	"scope": "/",
+	"display": "standalone",
+	"background_color": "#000000",
+	"theme_color": "#000000",
+	"orientation": "portrait",
+	"lang": "ko",
+	"icons": [
+		{
+			"src": "/favicon.svg",
+			"sizes": "any",
+			"type": "image/svg+xml",
+			"purpose": "any maskable"
+		}
+	]
+}
