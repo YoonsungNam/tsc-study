@@ -1,4 +1,5 @@
 import { redirect } from '@sveltejs/kit';
+import { loadProfileEssentials } from '$lib/server/profile';
 import type { PageServerLoad } from './$types';
 
 /**
@@ -14,11 +15,7 @@ export const load: PageServerLoad = async ({ locals: { safeGetSession, supabase 
 		redirect(303, '/login');
 	}
 
-	const { data: profile } = await supabase
-		.from('profiles')
-		.select('role, onboarded')
-		.eq('id', user.id)
-		.single();
+	const profile = await loadProfileEssentials(supabase, user.id);
 
 	if (!profile?.onboarded) {
 		redirect(303, '/onboarding');

@@ -1,4 +1,5 @@
 import { fail, redirect } from '@sveltejs/kit';
+import { loadProfileEssentials } from '$lib/server/profile';
 import type { Actions, PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ locals: { safeGetSession, supabase } }) => {
@@ -7,11 +8,7 @@ export const load: PageServerLoad = async ({ locals: { safeGetSession, supabase 
 		redirect(303, '/login');
 	}
 
-	const { data: profile } = await supabase
-		.from('profiles')
-		.select('onboarded')
-		.eq('id', user.id)
-		.single();
+	const profile = await loadProfileEssentials(supabase, user.id);
 
 	// Already onboarded — let the root page route them by role.
 	if (profile?.onboarded) {
