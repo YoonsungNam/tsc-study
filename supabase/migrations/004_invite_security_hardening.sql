@@ -23,12 +23,19 @@
 --       on a real insert via `RETURNING`.
 --
 -- Apply: paste into Supabase SQL Editor and Run, after 001–003.
+--
+-- The whole script runs inside one transaction so a mid-script failure
+-- doesn't leave the schema in a half-applied state — e.g. `invites`
+-- briefly without any policy between the DROP and CREATE. Each DROP
+-- carries `IF EXISTS` so the script is safe to re-run.
+
+begin;
 
 -- ------------------------------------------------------------------
 -- (P1) Tighten invites RLS — class-ownership check on WITH CHECK
 -- ------------------------------------------------------------------
 
-drop policy "invites: instructor manage" on invites;
+drop policy if exists "invites: instructor manage" on invites;
 
 create policy "invites: instructor manage" on invites for all
 	using (auth.uid() = created_by)
@@ -41,11 +48,25 @@ create policy "invites: instructor manage" on invites for all
 		)
 	);
 
+-- Defensive cleanup: purge any invites whose `created_by` doesn't match
+-- the class's instructor. The pre-tightening WITH CHECK allowed forged
+-- rows where these diverged. We don't expect any in this dev environment
+-- (no exploit attempts have been observed) but a one-shot delete here
+-- guarantees the table matches the new policy's invariant.
+-- Migration scripts run as the `postgres` superuser, which bypasses RLS,
+-- so this delete is unrestricted by the just-installed policy.
+delete from invites i
+where not exists (
+	select 1 from classes c
+	where c.id = i.class_id
+		and c.instructor_id = i.created_by
+);
+
 -- ------------------------------------------------------------------
 -- (P2a) Drop email fallback from get_invite_preview
 -- ------------------------------------------------------------------
 
-drop function get_invite_preview(text);
+drop function if exists get_invite_preview(text);
 
 create function get_invite_preview(invite_code text)
 returns table (
@@ -120,3 +141,5 @@ begin
 	return v_invite.class_id;
 end;
 $$;
+
+commit;
