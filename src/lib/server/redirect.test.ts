@@ -39,32 +39,27 @@ describe('safeNext', () => {
 	});
 
 	describe('open-redirect attempts', () => {
-		it('rejects scheme-relative //host', () => {
-			expect(safeNext('//evil.com')).toBe('/');
-		});
-
-		it('rejects scheme-relative //host with path', () => {
-			expect(safeNext('//evil.com/steal')).toBe('/');
-		});
-
-		it('rejects http:// URL', () => {
-			expect(safeNext('http://evil.com')).toBe('/');
-		});
-
-		it('rejects https:// URL', () => {
-			expect(safeNext('https://evil.com')).toBe('/');
-		});
-
-		it('rejects relative path without leading slash', () => {
-			expect(safeNext('foo')).toBe('/');
-		});
-
-		it('rejects javascript: URL', () => {
-			expect(safeNext('javascript:alert(1)')).toBe('/');
-		});
-
-		it('rejects data: URL', () => {
-			expect(safeNext('data:text/html,<script>alert(1)</script>')).toBe('/');
+		// Table-driven so adding a new bypass family is one row, not a new it()
+		// block. Cover the practical bypass shapes:
+		//   - scheme-relative '//host' (browsers resolve as external)
+		//   - explicit external URLs (http://, https://)
+		//   - non-http schemes that browsers honor in some places
+		//     (javascript:, data:)
+		//   - missing leading slash (treated as relative-to-current-path)
+		//   - backslash-injection / Windows-path quirks (defense-in-depth)
+		it.each([
+			'//evil.com',
+			'//evil.com/steal',
+			'http://evil.com',
+			'https://evil.com',
+			'javascript:alert(1)',
+			'data:text/html,<script>alert(1)</script>',
+			'foo',
+			'/\\evil.com',
+			'/legitimate\\evil',
+			'\\\\evil.com'
+		])('rejects %j', (input) => {
+			expect(safeNext(input)).toBe('/');
 		});
 	});
 });

@@ -8,11 +8,15 @@ import { defineConfig } from 'vitest/config';
  *
  * Component tests (later, once we add Svelte 5 component coverage) can be
  * scoped via additional includes or a second vitest project.
+ *
+ * Use `import.meta.dirname` (Node 20.11+, we're on 22) to resolve `$lib`
+ * against this config file's directory rather than `process.cwd()`. The
+ * latter would break if vitest is invoked from a subdirectory.
  */
 export default defineConfig({
 	resolve: {
 		alias: {
-			$lib: path.resolve('./src/lib')
+			$lib: path.resolve(import.meta.dirname, 'src/lib')
 		}
 	},
 	test: {
