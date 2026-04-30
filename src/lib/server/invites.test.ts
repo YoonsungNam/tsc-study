@@ -1,6 +1,12 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { describe, expect, it, vi } from 'vitest';
-import { createInvite, generateInviteCode, loadInvitesForClass } from './invites';
+import {
+	createInvite,
+	generateInviteCode,
+	getInvitePreview,
+	loadInvitesForClass,
+	redeemInvite
+} from './invites';
 
 const ALPHABET_RE = /^[ABCDEFGHJKLMNPQRSTUVWXYZ23456789]+$/;
 
@@ -134,5 +140,69 @@ describe('loadInvitesForClass', () => {
 		expect(mocks.from).toHaveBeenCalledWith('invites');
 		expect(mocks.eq).toHaveBeenCalledWith('class_id', 'c-abc');
 		expect(mocks.order).toHaveBeenCalledWith('created_at', { ascending: false });
+	});
+});
+
+// RPC-style stubs for getInvitePreview / redeemInvite.
+function makeRpcStub(response: { data: unknown; error: unknown }) {
+	const rpc = vi.fn().mockResolvedValue(response);
+	const client = { rpc } as unknown as SupabaseClient;
+	return { client, mocks: { rpc } };
+}
+
+describe('getInvitePreview', () => {
+	const row = { class_name: '초급반', instructor_name: '김선생', valid: true };
+
+	it('returns the first row when found', async () => {
+		const { client } = makeRpcStub({ data: [row], error: null });
+		expect(await getInvitePreview(client, 'ABCDEFGH')).toEqual(row);
+	});
+
+	it('also accepts a single-object response (defensive)', async () => {
+		const { client } = makeRpcStub({ data: row, error: null });
+		expect(await getInvitePreview(client, 'ABCDEFGH')).toEqual(row);
+	});
+
+	it('returns null when the result is empty', async () => {
+		const { client } = makeRpcStub({ data: [], error: null });
+		expect(await getInvitePreview(client, 'ABCDEFGH')).toBeNull();
+	});
+
+	it('returns null on rpc error', async () => {
+		const { client } = makeRpcStub({ data: null, error: { message: 'rpc fail' } });
+		expect(await getInvitePreview(client, 'ABCDEFGH')).toBeNull();
+	});
+
+	it('calls get_invite_preview with the code', async () => {
+		const { client, mocks } = makeRpcStub({ data: [], error: null });
+		await getInvitePreview(client, 'ABCDEFGH');
+
+		expect(mocks.rpc).toHaveBeenCalledWith('get_invite_preview', {
+			invite_code: 'ABCDEFGH'
+		});
+	});
+});
+
+describe('redeemInvite', () => {
+	it('returns classId on success', async () => {
+		const { client } = makeRpcStub({ data: 'class-uuid-1', error: null });
+		expect(await redeemInvite(client, 'ABCDEFGH')).toEqual({ classId: 'class-uuid-1' });
+	});
+
+	it('returns the error message on failure', async () => {
+		const { client } = makeRpcStub({
+			data: null,
+			error: { message: 'Invalid invite code' }
+		});
+		expect(await redeemInvite(client, 'ABCDEFGH')).toEqual({ error: 'Invalid invite code' });
+	});
+
+	it('calls redeem_invite with the code', async () => {
+		const { client, mocks } = makeRpcStub({ data: 'class-uuid', error: null });
+		await redeemInvite(client, 'ABCDEFGH');
+
+		expect(mocks.rpc).toHaveBeenCalledWith('redeem_invite', {
+			invite_code: 'ABCDEFGH'
+		});
 	});
 });

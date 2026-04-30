@@ -90,3 +90,54 @@ export async function loadInvitesForClass(
 	if (error || !data) return [];
 	return data as InviteRow[];
 }
+
+export type InvitePreview = {
+	class_name: string;
+	instructor_name: string;
+	valid: boolean;
+};
+
+/**
+ * Public-facing preview for an invite code: class name + instructor
+ * display name + whether the invite is still usable. Backed by the
+ * `get_invite_preview` SECURITY DEFINER RPC (migration 003), since RLS
+ * otherwise hides invites from anyone other than the creator.
+ *
+ * Returns null when the code doesn't exist.
+ */
+export async function getInvitePreview(
+	supabase: SupabaseClient,
+	code: string
+): Promise<InvitePreview | null> {
+	const { data, error } = await supabase.rpc('get_invite_preview', {
+		invite_code: code
+	});
+
+	if (error || !data || (Array.isArray(data) && data.length === 0)) {
+		return null;
+	}
+	return (Array.isArray(data) ? data[0] : data) as InvitePreview;
+}
+
+/**
+ * Call the `redeem_invite` SECURITY DEFINER RPC (defined in 001) to
+ * create the caller's membership in the invite's class. Returns either
+ * the joined class_id or an error message.
+ *
+ * The RPC handles its own validity checks (expired, used-up, missing,
+ * unauthenticated) and raises plpgsql exceptions which Supabase surfaces
+ * as `error.message` here.
+ */
+export async function redeemInvite(
+	supabase: SupabaseClient,
+	code: string
+): Promise<{ classId: string } | { error: string }> {
+	const { data, error } = await supabase.rpc('redeem_invite', {
+		invite_code: code
+	});
+
+	if (error) {
+		return { error: error.message };
+	}
+	return { classId: data as string };
+}
