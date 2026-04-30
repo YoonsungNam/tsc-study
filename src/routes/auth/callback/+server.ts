@@ -1,21 +1,6 @@
 import { redirect } from '@sveltejs/kit';
+import { safeNext } from '$lib/server/redirect';
 import type { RequestHandler } from './$types';
-
-/**
- * Restrict `next=` to same-origin internal paths only. Rejects:
- *   - missing/empty values  → '/'
- *   - external URLs (`http://...`, `https://...`)
- *   - scheme-relative URLs (`//evil.com`) which browsers resolve as
- *     external when used in `Location:` headers
- * Without this, a crafted callback URL becomes an open-redirect /
- * phishing vector.
- */
-function safeNext(value: string | null): string {
-	if (!value || !value.startsWith('/') || value.startsWith('//')) {
-		return '/';
-	}
-	return value;
-}
 
 /**
  * Magic link landing page. Supabase redirects here with `?code=...` after
