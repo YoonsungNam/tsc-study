@@ -37,7 +37,13 @@ function makeInsertStub(response: { data: unknown; error: unknown }) {
 
 describe('loadClassesForInstructor', () => {
 	const sample = [
-		{ id: 'c1', name: '초급반', description: null, created_at: '2026-01-01T00:00:00Z' }
+		{
+			id: 'c1',
+			name: '초급반',
+			description: null,
+			instructor_id: 'inst-1',
+			created_at: '2026-01-01T00:00:00Z'
+		}
 	];
 
 	it('returns the list when found', async () => {
@@ -55,7 +61,7 @@ describe('loadClassesForInstructor', () => {
 		await loadClassesForInstructor(client, 'inst-1');
 
 		expect(mocks.from).toHaveBeenCalledWith('classes');
-		expect(mocks.select).toHaveBeenCalledWith('id, name, description, created_at');
+		expect(mocks.select).toHaveBeenCalledWith('id, name, description, instructor_id, created_at');
 		expect(mocks.eq).toHaveBeenCalledWith('instructor_id', 'inst-1');
 		expect(mocks.order).toHaveBeenCalledWith('created_at', { ascending: false });
 	});
@@ -66,6 +72,7 @@ describe('createClass', () => {
 		id: 'c1',
 		name: '초급반',
 		description: '6월반',
+		instructor_id: 'inst-1',
 		created_at: '2026-01-01T00:00:00Z'
 	};
 
@@ -106,7 +113,13 @@ describe('createClass', () => {
 });
 
 describe('loadClassById', () => {
-	const sample = { id: 'c1', name: '초급반', description: null, created_at: '2026-01-01' };
+	const sample = {
+		id: 'c1',
+		name: '초급반',
+		description: null,
+		instructor_id: 'inst-1',
+		created_at: '2026-01-01'
+	};
 
 	it('returns the class when found', async () => {
 		const { client } = makeSelectSingleStub({ data: sample, error: null });
