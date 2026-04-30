@@ -46,5 +46,8 @@ jobs:
       - name: SvelteKit sync + typecheck
         run: npm run check
 
+      - name: Unit tests
+        run: npm test
+
       - name: Production build
         run: npm run build
